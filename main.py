@@ -1,4 +1,6 @@
-from token import bot
+import telebot
+import tokenz
+bot = telebot.TeleBot(tokenz.key)
 
 commands = {  # command description used in the "help" command
     'start '       : 'Знакомство с ботом',
@@ -11,6 +13,10 @@ commands = {  # command description used in the "help" command
 def send_welcome(message):
 	bot.send_message(message.chat.id, str(message.from_user.first_name)+", тебя приветсвует мастерская CeramicsWithLove "
                  + "чтобы посмотреть все команды нажми /help")
+
+@bot.message_handler(commands=['leave'])
+def leave(message):
+    bot.leave_chat(message.chat.id)
 
 @bot.message_handler(commands=['key'])
 def get_text_messages(message):
@@ -48,11 +54,14 @@ def plates(message):
     bot.send_message(message.chat.id, "Выбери интересующий тип", reply_markup=markup)
     @bot.message_handler(regexp='Плоские')
     def flat_plates(message):
-        bot.send_message(message.chat.id, "Тут будут фото плоских тарелок")
+        pass
+
 
 @bot.message_handler(regexp = 'Вазы')
 def vase(message):
-    pass
+    bot.send_photo(message.chat.id,
+                   'https://drive.google.com/file/d/1dCywvuSZLdcojq2oRnfk2MC3IALMBIgt/view?usp=sharing',
+                   'Ваза 23 см', None, None, None, True )
 
 @bot.message_handler(regexp = 'Кружки')
 def cup(message):

@@ -1,6 +1,6 @@
 import telebot
-import tokenz
-bot = telebot.TeleBot(tokenz.key)
+import passwords
+bot = telebot.TeleBot(passwords.key)
 
 commands = {  # command description used in the "help" command
     'start '       : 'Знакомство с ботом',
@@ -60,8 +60,11 @@ def plates(message):
 @bot.message_handler(regexp = 'Вазы')
 def vase(message):
     bot.send_photo(message.chat.id,
-                   'https://drive.google.com/file/d/1dCywvuSZLdcojq2oRnfk2MC3IALMBIgt/view?usp=sharing',
-                   'Ваза 23 см', None, None, None, True )
+                   'https://yadi.sk/i/Q3kD2atvn2lhsQ',
+                   'Ваза 23 см', None, None, "HTML", True )
+    bot.send_photo(message.chat.id,
+                   'https://yadi.sk/i/YVBSLtYXZ_gXAA',
+                   'Ваза 23 см', None, None, "HTML", True)
 
 @bot.message_handler(regexp = 'Кружки')
 def cup(message):

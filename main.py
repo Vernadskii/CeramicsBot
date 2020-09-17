@@ -1,26 +1,37 @@
+def send(message, nameCatalog):
+    bot.send_message(message.chat.id, "Загружаю...")
+    import googleCloud
+    output = googleCloud.listOfLinks(nameCatalog)
+    for i in output:
+        bot.send_photo(message.chat.id,
+                       i[0], i[1], None, None, None, True)
+    from telebot import types
+    itembtn1 = types.KeyboardButton('Вернуться в каталог')
+    itembtn2 = types.KeyboardButton('Сделать заказ')
+    markup = types.ReplyKeyboardMarkup(True, True)
+    markup.add(itembtn1, itembtn2)
+    bot.send_message(message.chat.id, "Понравилось? Что будем делать?", reply_markup=markup)
+
 import telebot
 import passwords
 bot = telebot.TeleBot(passwords.key)
 
 commands = {  # command description used in the "help" command
-    'start '       : 'Знакомство с ботом',
-    'help '        : 'Информация о существующих командах',
     'key '         : 'Информация о мастерской',
-    'catalog'      : 'Каталог товаров'
+    'catalog'      : 'Каталог товаров',
+    'help '        : 'Информация о существующих командах',
+    'start '       : 'Знакомство с ботом'
 }
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-	bot.send_message(message.chat.id, str(message.from_user.first_name)+", тебя приветсвует мастерская CeramicsWithLove "
+	bot.send_message(message.chat.id, str(message.from_user.first_name)+", тебя приветсвует мастерская керамики CeramicsWithLove, "
                  + "чтобы посмотреть все команды нажми /help")
-
-@bot.message_handler(commands=['leave'])
-def leave(message):
-    bot.leave_chat(message.chat.id)
 
 @bot.message_handler(commands=['key'])
 def get_text_messages(message):
-    bot.send_message(message.chat.id, "Cейчас я расскажу тебе о нашей мастерской ")
+    bot.send_message(message.chat.id, "Cейчас я расскажу тебе о нашей мастерской. Упс, мне пока"
+                                      " нечего рассказать :( ")
 
 @bot.message_handler(commands=['help'])
 def command_help(message):
@@ -32,8 +43,7 @@ def command_help(message):
     bot.send_message(cid, help_text)  # send the generated help page
 
 @bot.message_handler(commands=['catalog'])
-def get_text_messages(message):
-    #bot.reply_to(message, "Выбери интересующий раздел")
+def get_text_messageCatalog(message):
     # Импортируем типы из модуля, чтобы создавать кнопки
     from telebot import types
     markup = types.ReplyKeyboardMarkup(True, True)
@@ -41,38 +51,47 @@ def get_text_messages(message):
     itembtn2 = types.KeyboardButton('Вазы')
     itembtn3 = types.KeyboardButton('Кружки')
     itembtn4 = types.KeyboardButton('Прочее')
-    markup.add(itembtn1, itembtn2, itembtn3)
+    markup.add(itembtn1, itembtn2, itembtn3, itembtn4)
     bot.send_message(message.chat.id,"Выбери интересующий раздел", reply_markup=markup)
 
-@bot.message_handler(regexp = 'Тарелки')
-def plates(message):
+@bot.message_handler(content_types=['text'])
+def hangle_text(message):
+    if message.text == 'Тарелки':
+        from telebot import types
+        markup = types.ReplyKeyboardMarkup(True, True)
+        itembtn1 = types.KeyboardButton('Плоские тарелки')
+        itembtn2 = types.KeyboardButton('Глубокие тарелки')
+        markup.add(itembtn1, itembtn2)
+        bot.send_message(message.chat.id, "Выбери интересующий тип", reply_markup=markup)
+    if message.text == 'Плоские тарелки':
+        send(message, 'Flat plates')
+    elif message.text == 'Глубокие тарелки':
+        send(message, 'Deep plates')
+    elif message.text == 'Вазы':
+        send(message, 'Vases')
+    elif message.text == 'Кружки':
+        send(message, 'Cups')
+    elif message.text == 'Прочее':
+        send(message, 'Other')
+    elif message.text == 'Вернуться в каталог':
+        get_text_messageCatalog(message)
+    elif message.text == 'Сделать заказ':
+        from telebot import types
+        markup = types.ReplyKeyboardMarkup(True, True)
+        itembtn1 = types.KeyboardButton("Хочу чтобы со мной связались", True)
+        itembtn2 = types.KeyboardButton("Я сам напишу")
+        markup.add(itembtn1, itembtn2)
+        bot.send_message(message.chat.id, "Выбери способ заказа", reply_markup=markup)
+    elif message.text == 'Я сам напишу':
+        bot.send_message(message.chat.id, 'Твое письмо уже ждут по адресу @annjuniper')
+
+
+@bot.message_handler(content_types=["contact"])
+def save_contact(message):
     from telebot import types
-    markup = types.ReplyKeyboardMarkup(True, True)
-    itembtn1 = types.KeyboardButton('Плоские')
-    itembtn2 = types.KeyboardButton('Глубокие')
-    markup.add(itembtn1, itembtn2)
-    bot.send_message(message.chat.id, "Выбери интересующий тип", reply_markup=markup)
-    @bot.message_handler(regexp='Плоские')
-    def flat_plates(message):
-        pass
-
-
-@bot.message_handler(regexp = 'Вазы')
-def vase(message):
-    bot.send_photo(message.chat.id,
-                   'https://yadi.sk/i/Q3kD2atvn2lhsQ',
-                   'Ваза 23 см', None, None, "HTML", True )
-    bot.send_photo(message.chat.id,
-                   'https://yadi.sk/i/YVBSLtYXZ_gXAA',
-                   'Ваза 23 см', None, None, "HTML", True)
-
-@bot.message_handler(regexp = 'Кружки')
-def cup(message):
-    pass
-
-@bot.message_handler(regexp = 'Прочее')
-def other(message):
-    pass
+    markup = types.ReplyKeyboardRemove()
+    bot.send_message(message.chat.id, "Поздравляю будущего владельца керамики! Ваш контакт отослан, скоро с вами свяжутся", reply_markup=markup)
+    bot.send_message(108020326, "Аня! Поздравляю, поступил новый заказ от: " + str(message.contact))
 
 
 

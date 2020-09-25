@@ -23,6 +23,19 @@ commands = {  # command description used in the "help" command
     'start '       : 'Знакомство с ботом'
 }
 
+import os
+from flask import Flask, request
+import logging
+logger = telebot.logger
+telebot.logger.setLevel(logging.INFO)
+server = Flask(__name__)
+os.environ['FLASK_ENV'] = 'development'
+
+@server.route('/' + passwords.key, methods=['POST'])
+def getMessage():
+    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
+    return "!", 200
+
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
 	bot.send_message(message.chat.id, str(message.from_user.first_name)+", тебя приветсвует мастерская керамики CeramicsWithLove, "
@@ -63,7 +76,7 @@ def hangle_text(message):
         itembtn2 = types.KeyboardButton('Глубокие тарелки')
         markup.add(itembtn1, itembtn2)
         bot.send_message(message.chat.id, "Выбери интересующий тип", reply_markup=markup)
-    if message.text == 'Плоские тарелки':
+    elif message.text == 'Плоские тарелки':
         send(message, 'Flat plates')
     elif message.text == 'Глубокие тарелки':
         send(message, 'Deep plates')
@@ -83,8 +96,9 @@ def hangle_text(message):
         markup.add(itembtn1, itembtn2)
         bot.send_message(message.chat.id, "Выбери способ заказа", reply_markup=markup)
     elif message.text == 'Я сам напишу':
-        bot.send_message(message.chat.id, 'Твое письмо уже ждут по адресу @annjuniper')
-
+        bot.send_message(message.chat.id, 'Твое письмо уже ждут по адресу @annjuniper' + "\n"
+                         + "Можешь в добавок просто переслать изделие которое понравилось")
+    else: bot.send_message(message.chat.id, 'Я тебя не понимаю :(' + "\n" + "Воспользуйся командой /help")
 
 @bot.message_handler(content_types=["contact"])
 def save_contact(message):
@@ -93,6 +107,10 @@ def save_contact(message):
     bot.send_message(message.chat.id, "Поздравляю будущего владельца керамики! Ваш контакт отослан, скоро с вами свяжутся", reply_markup=markup)
     bot.send_message(108020326, "Аня! Поздравляю, поступил новый заказ от: " + str(message.contact))
 
+@server.route("/")
+def webhook():
+    bot.remove_webhook()
+    bot.set_webhook(url='https://telegrambot151.herokuapp.com/' + passwords.key)
+    return "!", 200
 
-
-bot.polling(none_stop=False, interval=0, timeout=20)
+server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
